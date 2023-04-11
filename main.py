@@ -99,15 +99,49 @@ def parse_records(traffic_incidents):
     return records
 
 
+def apply_archive_status(records):
+    """
+    updates status to ARCHIVED and status_date_time to now
+    :param records: list of records that are in postgrest but no longer in oracle db (no longer active)
+    :return: list of records (dicts)
+    """
+    for record in records:
+        record["traffic_report_status"] = "ARCHIVED"
+        record["traffic_report_status_date_time"] = arrow.now().format()
+    return records
+
+
 def main():
+    # get records from oracle db
     traffic_incident_records = get_oracle_db_records()
     traffic_incident_records = parse_records(traffic_incident_records)
-    print(traffic_incident_records)
+    incident_record_ids = [record["traffic_report_id"] for record in traffic_incident_records]
+    # get records with ACTIVE status from postgrest
     active_records = get_active_records()
-    # make a list of the record ids only
     active_records_ids = [record["traffic_report_id"] for record in active_records]
-    print(len(active_records))
-    print("DONE")
+
+    # records that are in oracle db but not postgrest
+    new_records = [
+        record
+        for record in traffic_incident_records
+        if record["traffic_report_id"] not in active_records_ids
+    ]
+
+    # records that are in postgrest but no longer in oracle db
+    archive_records = [
+        record
+        for record in active_records
+        if record["traffic_report_id"] not in incident_record_ids
+    ]
+
+    archive_records = apply_archive_status(archive_records)
+
+    payload = new_records + archive_records
+
+    if payload:
+        res = requests.post(PGREST_ENDPOINT, headers=headers, json=payload)
+
+    return len(payload)
 
 
 if __name__ == "__main__":
