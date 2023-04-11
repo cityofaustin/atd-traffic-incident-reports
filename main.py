@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # docker run -it --rm --env-file .env -v /path/to/folder/atd-traffic-incident-reports:/app \
-# atddocker/atd-traffic-incident-reports:production bash
+# atddocker/atd-traffic-incident-reports:production ./main.py
 
 import os
 import logging
@@ -29,6 +29,7 @@ QUERY = "SELECT * FROM QACT_USER.QACT"
 
 
 def get_conn(host, port, service, user, password):
+    """ Create oracle database connection """
     # make connect descriptor string
     oracle_data_source_name = cx_Oracle.makedsn(host, port, service_name=service)
     # create and return oracle connection object
@@ -36,6 +37,10 @@ def get_conn(host, port, service, user, password):
 
 
 def get_oracle_db_records():
+    """
+    connects to oracle db and executes query, converts rows retrieved into dicts
+    :return: list of records (dict)
+    """
     conn = get_conn(HOST, PORT, SERVICE, USER, PASSWORD)
     cursor = conn.cursor()
     cursor.execute(QUERY)
@@ -68,6 +73,10 @@ def generate_record_id(call_number, timestamp):
 
 
 def get_active_records():
+    """
+    Query active records from postgrest endpoint
+    :return: list of active records (dict)
+    """
     active_records_endpoint = f"{PGREST_ENDPOINT}?traffic_report_status=eq.ACTIVE"
 
     active_records_response = requests.get(active_records_endpoint, headers=headers)
@@ -76,6 +85,11 @@ def get_active_records():
 
 
 def format_record(incident):
+    """
+    Formats data from incident into record dict to upsert to postgrest
+    :param incident: dict from oracle db
+    :return: record dict
+    """
     record = {}
     published_date = arrow.get(incident['CURR_DATE']).replace(tzinfo="US/Central")
     status_date = arrow.now().format()
@@ -91,6 +105,10 @@ def format_record(incident):
 
 
 def parse_records(traffic_incidents):
+    """
+    :param traffic_incidents: list of traffic incidents from oracle db
+    :return: list of formatted incident records
+    """
     records = []
     for incident in traffic_incidents:
         record = format_record(incident)
@@ -134,14 +152,16 @@ def main():
         if record["traffic_report_id"] not in incident_record_ids
     ]
 
+    # change status to ARCHIVED and add timestamp
     archive_records = apply_archive_status(archive_records)
 
     payload = new_records + archive_records
 
+    logging.info(f"{len(payload)} records to upsert into postgrest.")
+
     if payload:
         res = requests.post(PGREST_ENDPOINT, headers=headers, json=payload)
-
-    return len(payload)
+        return res.json()
 
 
 if __name__ == "__main__":
