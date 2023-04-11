@@ -22,6 +22,3 @@ This repo has a `template.env` file, copy that file and rename as `.env`. The mi
 
 Running `./main.py` will connect to the database, download and process the incidents and compare them to the active records in postgrest. Any records that differ will be upserted to postgrest.
 
-### Misc
-
-[Instructions](https://github.com/cityofaustin/atd-data-tech/issues/10688#issuecomment-1472856559) to connect to Oracle DB using database client.
