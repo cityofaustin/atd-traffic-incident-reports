@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # docker run -it --rm --env-file .env -v /path/to/folder/atd-traffic-incident-reports:/app \
-# atddocker/atd-traffic-incident-reports:production ./main.py
+# atddocker/atd-traffic-incident-reports:production bash
 
 import os
 import logging

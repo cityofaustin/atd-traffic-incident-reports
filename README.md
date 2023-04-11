@@ -22,3 +22,4 @@ This repo has a `template.env` file, copy that file and rename as `.env`. The mi
 
 Running `./main.py` will connect to the database, download and process the incidents and compare them to the active records in postgrest. Any records that differ will be upserted to postgrest.
 
+Note: You must be on the COA network in order to connect to the oracle database.
