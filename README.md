@@ -4,7 +4,7 @@ https://data.austintexas.gov/Transportation-and-Mobility/Real-Time-Traffic-Incid
 
 This script replaces a [CTM](https://www.austintexas.gov/department/information-technology) created Cold Fusion app that connected to the public safety CAD database and published that information in the form of an RSS feed. The cold fusion app is slated to be retired by CTM.
 
-DTS parsed the information from that RSS feed and saved it in one of our postgrest instances. The script that parsed the RSS feed is [here](https://github.com/cityofaustin/atd-data-publishing/blob/master/transportation-data-publishing/data_tracker/traffic_reports.py).
+DTS parsed the information from that RSS feed and saved it in one of our [postgrest](https://github.com/cityofaustin/atd-postgrest) instances. The script that parsed the RSS feed is [here](https://github.com/cityofaustin/atd-data-publishing/blob/master/transportation-data-publishing/data_tracker/traffic_reports.py).
 
 The script `main.py` contained in this repo bypasses the RSS feed and instead connects to the database directly and then proceeds to format and handle the data obtained in the same manner as the legacy script linked above. The oracle database only contains active traffic incidents.
 

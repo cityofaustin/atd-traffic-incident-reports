@@ -161,6 +161,7 @@ def main():
 
     if payload:
         res = requests.post(PGREST_ENDPOINT, headers=headers, json=payload)
+        logging.info(f"request response status code: {res.status_code}")
         return res.json()
 
 
