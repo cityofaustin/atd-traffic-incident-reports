@@ -93,7 +93,7 @@ def format_record(incident):
     record = {}
     published_date = arrow.get(incident['CURR_DATE']).replace(tzinfo="US/Central")
     status_date = arrow.now(tz="US/Central").format()
-    record["traffic_report_id"] = generate_record_id(incident['CALL_NUMBER'], published_date.timestamp)
+    record["traffic_report_id"] = generate_record_id(incident['CALL_NUMBER'], int(published_date.timestamp()))
     record["published_date"] = published_date.format()
     record["traffic_report_status"] = "ACTIVE"
     record["traffic_report_status_date_time"] = status_date
