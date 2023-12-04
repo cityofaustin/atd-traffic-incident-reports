@@ -6,11 +6,11 @@ This script replaces a [CTM](https://www.austintexas.gov/department/information-
 
 DTS parsed the information from that RSS feed and saved it in one of our [postgrest](https://github.com/cityofaustin/atd-postgrest) instances. The script that parsed the RSS feed is [here](https://github.com/cityofaustin/atd-data-publishing/blob/master/transportation-data-publishing/data_tracker/traffic_reports.py).
 
-The script `main.py` contained in this repo bypasses the RSS feed and instead connects to the database directly and then proceeds to format and handle the data obtained in the same manner as the legacy script linked above. The oracle database only contains active traffic incidents.
+The script `main.py` contained in this repo bypasses the RSS feed and instead connects to the database directly. It then proceeds to format and handle the data obtained in the same manner as the legacy script linked above. The oracle database only contains active traffic incidents.
 
 ### Automation
 
-The `main.py` script is scheduled to run every 5 minutes by [Prefect](https://github.com/cityofaustin/atd-prefect/tree/main/flows/atd-traffic-incident-reports).
+The `main.py` script is scheduled to run every 5 minutes by [Airflow](https://github.com/cityofaustin/atd-airflow/blob/production/dags/atd_traffic_incident_reports.py).
 
 The data from the postgrest database is pushed to socrata [every 5 minutes as well](https://github.com/cityofaustin/atd-data-deploy/blob/production/config/scripts.yml#L279).
 
