@@ -8,18 +8,6 @@ PGREST_ENDPOINT = os.getenv("PGREST_ENDPOINT")
 PGREST_TOKEN = os.getenv("PGREST_TOKEN")
 SOCRATA_RESOURCE_ID = os.getenv("SOCRATA_RESOURCE_ID")
 
-PGREST_PUB = {
-    "traffic_reports": {
-        "pgrest_base_url": "https://atd-postgrest.austinmobility.io/legacy-scripts/traffic_reports",
-        "socrata_resource_id": "dx9v-zd7x",
-        "location_fields": {
-            "lat": "latitude",
-            "lon": "longitude",
-            "location_field": "location",
-        },
-    }
-}
-
 
 def format_filter_date(date_from_args):
     return "1970-01-01" if not date_from_args else arrow.get(date_from_args).isoformat()
@@ -63,5 +51,4 @@ if __name__ == "__main__":
 
     cli_args = parser.parse_args()
     main(cli_args)
-
 
