@@ -23,7 +23,7 @@ def main(args):
         resource="traffic_reports",
         params={
             "published_date": f"gte.{filter_iso_date_str}",
-            "order_by": "traffic_report_status_date_time",
+            "order": "traffic_report_status_date_time",
         },
     )
 
