@@ -1,7 +1,6 @@
-from . import postgrest, socrata, logging
+from . import socrata, logging
 
 __all__ = [
-    "postgrest",
     "socrata",
     "logging"
 ]
