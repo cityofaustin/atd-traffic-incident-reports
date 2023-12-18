@@ -101,6 +101,7 @@ def format_record(incident):
     record["issue_reported"] = incident['DESCRIPTION'].strip()
     record["latitude"] = incident['LATITUDE']
     record["longitude"] = incident['LONGITUDE']
+    record["agency"] = incident['AGENCY_TYPE']
     return record
 
 
