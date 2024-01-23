@@ -77,7 +77,7 @@ def get_active_records():
     Query active records from postgrest endpoint
     :return: list of active records (dict)
     """
-    active_records_endpoint = f"{PGREST_ENDPOINT}?traffic_report_status=eq.ACTIVE"
+    active_records_endpoint = f"{PGREST_ENDPOINT}/traffic_reports?traffic_report_status=eq.ACTIVE"
 
     active_records_response = requests.get(active_records_endpoint, headers=headers)
     active_records_response.raise_for_status()
