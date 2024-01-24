@@ -6,7 +6,7 @@ import os
 import logging
 import sys
 import requests
-import cx_Oracle
+import oracledb as cx_Oracle
 import hashlib
 import arrow
 
@@ -161,8 +161,10 @@ def main():
     logging.info(f"{len(payload)} records to upsert into postgrest.")
 
     if payload:
-        res = requests.post(PGREST_ENDPOINT, headers=headers, json=payload)
+        res = requests.post(f"{PGREST_ENDPOINT}/traffic_reports", headers=headers, json=payload)
         logging.info(f"request response status code: {res.status_code}")
+        if res.status_code == 400:
+            logging.info(res.text)
         return res.json()
 
 

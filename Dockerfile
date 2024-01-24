@@ -1,4 +1,4 @@
-FROM atddocker/atd-oracle-py:production
+FROM python:3.8-slim
 
 # Copy our own application
 WORKDIR /app
