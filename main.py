@@ -78,7 +78,6 @@ def get_active_records():
     :return: list of active records (dict)
     """
     active_records_endpoint = f"{PGREST_ENDPOINT}/traffic_reports?traffic_report_status=eq.ACTIVE"
-
     active_records_response = requests.get(active_records_endpoint, headers=headers)
     active_records_response.raise_for_status()
     return active_records_response.json()
@@ -163,8 +162,7 @@ def main():
     if payload:
         res = requests.post(f"{PGREST_ENDPOINT}/traffic_reports", headers=headers, json=payload)
         logging.info(f"request response status code: {res.status_code}")
-        if res.status_code == 400:
-            logging.info(res.text)
+        res.raise_for_status()
         return res.json()
 
 
