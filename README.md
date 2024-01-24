@@ -10,13 +10,11 @@ The script `main.py` contained in this repo bypasses the RSS feed and instead co
 
 ### Automation
 
-The `main.py` script is scheduled to run every 5 minutes by [Airflow](https://github.com/cityofaustin/atd-airflow/blob/production/dags/atd_traffic_incident_reports.py).
-
-The data from the postgrest database is pushed to socrata [every 5 minutes as well](https://github.com/cityofaustin/atd-data-deploy/blob/production/config/scripts.yml#L279).
+The `main.py` and `records_to_socrata.py` scripts are scheduled to run every 5 minutes by [Airflow](https://github.com/cityofaustin/atd-airflow/blob/production/dags/atd_traffic_incident_reports.py).
 
 ### Setup
 
-The easiest path to running these utilities locally is to build this repo's Docker image, or pull it from `atddocker/atd-traffic-incident-reports`. This container builds on top of `atd-oracle-py`, which solves the headache of installing `cx_Oracle`. Any push to the main branch will trigger a docker build/push to Docker hub, updating the atd-traffic-incident-reports Docker image.
+The easiest path to running these utilities locally is to build this repo's Docker image, or pull it from `atddocker/atd-traffic-incident-reports`. Previous versions of this code depended on cx_Oracle, it now uses [oracledb](https://python-oracledb.readthedocs.io/en/latest/user_guide/appendix_c.html#steps-to-upgrade-to-python-oracledb). Any push to the main branch will trigger a docker build/push to Docker hub, updating the atd-traffic-incident-reports Docker image.
 
 This repo has a `template.env` file, copy that file and rename as `.env`. The missing credentials can be found in the DTS 1Password vault, search "Austin-Travis County Traffic Report" for the username and password. The postgrest token is the legacy-scripts token.
 

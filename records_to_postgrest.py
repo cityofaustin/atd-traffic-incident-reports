@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # docker run -it --rm --env-file .env -v /path/to/folder/atd-traffic-incident-reports:/app \
-# atddocker/atd-traffic-incident-reports:production python main.py
+# atddocker/atd-traffic-incident-reports:production python records_to_postgrest.py
 
 import os
 import logging
 import sys
 import requests
-import cx_Oracle
+import oracledb as cx_Oracle
 import hashlib
 import arrow
 
@@ -78,7 +78,6 @@ def get_active_records():
     :return: list of active records (dict)
     """
     active_records_endpoint = f"{PGREST_ENDPOINT}/traffic_reports?traffic_report_status=eq.ACTIVE"
-
     active_records_response = requests.get(active_records_endpoint, headers=headers)
     active_records_response.raise_for_status()
     return active_records_response.json()
@@ -101,6 +100,7 @@ def format_record(incident):
     record["issue_reported"] = incident['DESCRIPTION'].strip()
     record["latitude"] = incident['LATITUDE']
     record["longitude"] = incident['LONGITUDE']
+    record["agency"] = incident['AGENCY_TYPE']
     return record
 
 
@@ -160,8 +160,9 @@ def main():
     logging.info(f"{len(payload)} records to upsert into postgrest.")
 
     if payload:
-        res = requests.post(PGREST_ENDPOINT, headers=headers, json=payload)
+        res = requests.post(f"{PGREST_ENDPOINT}/traffic_reports", headers=headers, json=payload)
         logging.info(f"request response status code: {res.status_code}")
+        res.raise_for_status()
         return res.json()
 
 
