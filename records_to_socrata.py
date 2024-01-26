@@ -49,8 +49,12 @@ def main(args):
     client_socrata = utils.socrata.get_client()
     method = "replace" if not args.date else "upsert"
 
-    utils.socrata.publish(method=method, resource_id=SOCRATA_RESOURCE_ID, payload=data, client=client_socrata
-                          )
+    utils.socrata.publish(
+        method=method,
+        resource_id=SOCRATA_RESOURCE_ID,
+        payload=data,
+        client=client_socrata,
+    )
     logger.info(f"{len(data)} records processed.")
 
 
