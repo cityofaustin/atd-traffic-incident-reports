@@ -14,6 +14,18 @@ def format_filter_date(date_from_args):
     return "1970-01-01" if not date_from_args else arrow.get(date_from_args).isoformat()
 
 
+def build_point_data(data):
+    """
+    formats location point column as expected by Socrata
+    """
+    for r in data:
+        # handling missing lat and/or lon
+        if r["longitude"] and r["latitude"]:
+            r["location"] = f"POINT ({r['longitude']} {r['latitude']})"
+        else:
+            r["location"] = None
+
+
 def main(args):
     filter_iso_date_str = format_filter_date(args.date)
 
@@ -32,11 +44,13 @@ def main(args):
     if not data:
         return
 
+    build_point_data(data)
+
     client_socrata = utils.socrata.get_client()
     method = "replace" if not args.date else "upsert"
 
     utils.socrata.publish(method=method, resource_id=SOCRATA_RESOURCE_ID, payload=data, client=client_socrata
-    )
+                          )
     logger.info(f"{len(data)} records processed.")
 
 
@@ -52,4 +66,3 @@ if __name__ == "__main__":
 
     cli_args = parser.parse_args()
     main(cli_args)
-
