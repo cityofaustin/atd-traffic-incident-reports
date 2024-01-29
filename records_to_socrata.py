@@ -34,7 +34,7 @@ def main(args):
     data = client_postgrest.select(
         resource="traffic_reports",
         params={
-            "published_date": f"gte.{filter_iso_date_str}",
+            "traffic_report_status_date_time": f"gte.{filter_iso_date_str}",
             "order": "traffic_report_status_date_time",
         },
     )
