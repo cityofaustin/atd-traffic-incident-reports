@@ -7,7 +7,8 @@ from pypgrest import Postgrest
 
 PGREST_ENDPOINT = os.getenv("PGREST_ENDPOINT")
 PGREST_TOKEN = os.getenv("PGREST_TOKEN")
-SOCRATA_RESOURCE_ID = os.getenv("SOCRATA_RESOURCE_ID")
+TRAFFIC_RESOURCE_ID = os.getenv("TRAFFIC_RESOURCE_ID")
+FIRE_RESOURCE_ID = os.getenv("FIRE_RESOURCE_ID")
 
 
 def format_filter_date(date_from_args):
@@ -31,31 +32,37 @@ def main(args):
 
     client_postgrest = Postgrest(PGREST_ENDPOINT, token=PGREST_TOKEN)
 
-    data = client_postgrest.select(
-        resource="traffic_reports",
-        params={
-            "traffic_report_status_date_time": f"gte.{filter_iso_date_str}",
-            "order": "traffic_report_status_date_time",
-        },
-    )
+    datasets = {
+        "Traffic incident": TRAFFIC_RESOURCE_ID,
+        "Fire incident": FIRE_RESOURCE_ID,
+    }
 
-    logger.info(f"{len(data)} records to process")
+    for dataset in datasets:
 
-    if not data:
-        return
+        data = client_postgrest.select(
+            resource="traffic_reports",
+            params={
+                "traffic_report_status_date_time": f"gte.{filter_iso_date_str}",
+                "order": "traffic_report_status_date_time",
+                "type": f"eq.{dataset}"
+            },
+        )
 
-    build_point_data(data)
+        logger.info(f"{len(data)} {dataset}s to process")
 
-    client_socrata = utils.socrata.get_client()
-    method = "replace" if not args.date else "upsert"
+        if not data:
+            return
 
-    utils.socrata.publish(
-        method=method,
-        resource_id=SOCRATA_RESOURCE_ID,
-        payload=data,
-        client=client_socrata,
-    )
-    logger.info(f"{len(data)} records processed.")
+        build_point_data(data)
+
+        client_socrata = utils.socrata.get_client()
+        utils.socrata.publish(
+            method="upsert",
+            resource_id=datasets[dataset],
+            payload=data,
+            client=client_socrata,
+        )
+        logger.info(f"{len(data)} records processed.")
 
 
 if __name__ == "__main__":
@@ -66,6 +73,7 @@ if __name__ == "__main__":
         "--date",
         type=str,
         help=f"An ISO 8601-compliant date string which will be used to query records",
+        required=True,
     )
 
     cli_args = parser.parse_args()

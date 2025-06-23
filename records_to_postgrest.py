@@ -25,11 +25,33 @@ headers = {
     "Prefer": "return=representation, resolution=merge-duplicates",
 }
 
-QUERY = "SELECT * FROM QACT_USER.QACT"
+QUERY = """
+    SELECT CURR_DATE,
+       CALL_NUMBER,
+       ADDRESS,
+       DESCRIPTION,
+       LONGITUDE,
+       LATITUDE,
+       AGENCY_TYPE,
+       'Traffic incident' as TYPE
+    FROM QACT
+    
+    UNION
+    
+    SELECT CURR_DATE,
+           CALL_NUMBER,
+           ADDRESS,
+           DESCRIPTION,
+           LONGITUDE,
+           LATITUDE,
+           AGENCY_TYPE,
+           'Fire incident' as TYPE
+    FROM FIRES
+"""
 
 
 def get_conn(host, port, service, user, password):
-    """ Create oracle database connection """
+    """Create oracle database connection"""
     # make connect descriptor string
     oracle_data_source_name = cx_Oracle.makedsn(host, port, service_name=service)
     # create and return oracle connection object
@@ -77,7 +99,9 @@ def get_active_records():
     Query active records from postgrest endpoint
     :return: list of active records (dict)
     """
-    active_records_endpoint = f"{PGREST_ENDPOINT}/traffic_reports?traffic_report_status=eq.ACTIVE"
+    active_records_endpoint = (
+        f"{PGREST_ENDPOINT}/traffic_reports?traffic_report_status=eq.ACTIVE"
+    )
     active_records_response = requests.get(active_records_endpoint, headers=headers)
     active_records_response.raise_for_status()
     return active_records_response.json()
@@ -90,17 +114,19 @@ def format_record(incident):
     :return: record dict
     """
     record = {}
-    published_date = arrow.get(incident['CURR_DATE']).replace(tzinfo="US/Central")
+    published_date = arrow.get(incident["CURR_DATE"]).replace(tzinfo="US/Central")
     status_date = arrow.now(tz="US/Central").format()
-    record["traffic_report_id"] = generate_record_id(incident['CALL_NUMBER'], int(published_date.timestamp()))
+    record["traffic_report_id"] = generate_record_id(
+        incident["CALL_NUMBER"], int(published_date.timestamp())
+    )
     record["published_date"] = published_date.format()
     record["traffic_report_status"] = "ACTIVE"
     record["traffic_report_status_date_time"] = status_date
-    record["address"] = incident['ADDRESS'].strip()
-    record["issue_reported"] = incident['DESCRIPTION'].strip()
-    record["latitude"] = incident['LATITUDE']
-    record["longitude"] = incident['LONGITUDE']
-    record["agency"] = incident['AGENCY_TYPE']
+    record["address"] = incident["ADDRESS"].strip()
+    record["issue_reported"] = incident["DESCRIPTION"].strip()
+    record["latitude"] = incident["LATITUDE"]
+    record["longitude"] = incident["LONGITUDE"]
+    record["agency"] = incident["AGENCY_TYPE"]
     return record
 
 
@@ -133,7 +159,9 @@ def main():
     # get records from oracle db
     traffic_incident_records = get_oracle_db_records()
     traffic_incident_records = parse_records(traffic_incident_records)
-    incident_record_ids = [record["traffic_report_id"] for record in traffic_incident_records]
+    incident_record_ids = [
+        record["traffic_report_id"] for record in traffic_incident_records
+    ]
     # get records with ACTIVE status from postgrest
     active_records = get_active_records()
     active_records_ids = [record["traffic_report_id"] for record in active_records]
@@ -159,11 +187,13 @@ def main():
 
     logging.info(f"{len(payload)} records to upsert into postgrest.")
 
-    if payload:
-        res = requests.post(f"{PGREST_ENDPOINT}/traffic_reports", headers=headers, json=payload)
-        logging.info(f"request response status code: {res.status_code}")
-        res.raise_for_status()
-        return res.json()
+    # if payload:
+    #     res = requests.post(
+    #         f"{PGREST_ENDPOINT}/traffic_reports", headers=headers, json=payload
+    #     )
+    #     logging.info(f"request response status code: {res.status_code}")
+    #     res.raise_for_status()
+    #     return res.json()
 
 
 if __name__ == "__main__":
