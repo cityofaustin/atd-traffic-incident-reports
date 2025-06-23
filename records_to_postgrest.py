@@ -127,6 +127,7 @@ def format_record(incident):
     record["latitude"] = incident["LATITUDE"]
     record["longitude"] = incident["LONGITUDE"]
     record["agency"] = incident["AGENCY_TYPE"]
+    record["type"] = incident["TYPE"]
     return record
 
 
