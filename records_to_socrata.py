@@ -33,18 +33,18 @@ def main(args):
     client_postgrest = Postgrest(PGREST_ENDPOINT, token=PGREST_TOKEN)
 
     datasets = {
-        "Traffic incident": TRAFFIC_RESOURCE_ID,
-        "Fire incident": FIRE_RESOURCE_ID,
+        "traffic_incident": TRAFFIC_RESOURCE_ID,
+        "fire_incident": FIRE_RESOURCE_ID,
     }
 
     for dataset in datasets:
-
         data = client_postgrest.select(
-            resource="traffic_reports",
+            resource="public_safety_incidents",
             params={
+                "select": "traffic_report_id,published_date,issue_reported,latitude,longitude,address,traffic_report_status,traffic_report_status_date_time,agency",
                 "traffic_report_status_date_time": f"gte.{filter_iso_date_str}",
                 "order": "traffic_report_status_date_time",
-                "type": f"eq.{dataset}"
+                "incident_type": f"eq.{dataset}",
             },
         )
 

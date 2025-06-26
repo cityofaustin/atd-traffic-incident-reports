@@ -27,14 +27,14 @@ headers = {
 
 QUERY = """
     SELECT CURR_DATE,
-       CALL_NUMBER,
-       ADDRESS,
-       DESCRIPTION,
-       LONGITUDE,
-       LATITUDE,
-       AGENCY_TYPE,
-       'Traffic incident' as TYPE
-    FROM QACT
+           CALL_NUMBER,
+           ADDRESS,
+           DESCRIPTION,
+           LONGITUDE,
+           LATITUDE,
+           AGENCY_TYPE,
+           'traffic_incident' as INCIDENT_TYPE
+    FROM QACT_USER.QACT
     
     UNION
     
@@ -45,8 +45,8 @@ QUERY = """
            LONGITUDE,
            LATITUDE,
            AGENCY_TYPE,
-           'Fire incident' as TYPE
-    FROM FIRES
+           'fire_incident' as INCIDENT_TYPE
+    FROM QACT_USER.FIRES
 """
 
 
@@ -100,7 +100,7 @@ def get_active_records():
     :return: list of active records (dict)
     """
     active_records_endpoint = (
-        f"{PGREST_ENDPOINT}/traffic_reports?traffic_report_status=eq.ACTIVE"
+        f"{PGREST_ENDPOINT}/public_safety_incidents?traffic_report_status=eq.ACTIVE"
     )
     active_records_response = requests.get(active_records_endpoint, headers=headers)
     active_records_response.raise_for_status()
@@ -127,7 +127,7 @@ def format_record(incident):
     record["latitude"] = incident["LATITUDE"]
     record["longitude"] = incident["LONGITUDE"]
     record["agency"] = incident["AGENCY_TYPE"]
-    record["type"] = incident["TYPE"]
+    record["incident_type"] = incident["INCIDENT_TYPE"]
     return record
 
 
@@ -188,13 +188,13 @@ def main():
 
     logging.info(f"{len(payload)} records to upsert into postgrest.")
 
-    # if payload:
-    #     res = requests.post(
-    #         f"{PGREST_ENDPOINT}/traffic_reports", headers=headers, json=payload
-    #     )
-    #     logging.info(f"request response status code: {res.status_code}")
-    #     res.raise_for_status()
-    #     return res.json()
+    if payload:
+        res = requests.post(
+            f"{PGREST_ENDPOINT}/public_safety_incidents", headers=headers, json=payload
+        )
+        logging.info(f"request response status code: {res.status_code}")
+        res.raise_for_status()
+        return res.json()
 
 
 if __name__ == "__main__":
