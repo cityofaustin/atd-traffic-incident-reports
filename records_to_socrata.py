@@ -3,6 +3,7 @@ import argparse
 import os
 import arrow
 import utils
+import sys
 from pypgrest import Postgrest
 
 PGREST_ENDPOINT = os.getenv("PGREST_ENDPOINT")
@@ -28,6 +29,15 @@ def build_point_data(data):
 
 
 def main(args):
+    if not args.date and not args.replace:
+        raise ValueError("You must either provide a date or use the --replace flag.")
+    if args.replace:
+        confirmation = input(
+            "Are you sure you want to replace all data stored in Socrata? Type 'yes' to confirm: "
+        )
+        if confirmation.strip().lower() != "yes":
+            sys.exit(1)
+
     filter_iso_date_str = format_filter_date(args.date)
 
     client_postgrest = Postgrest(PGREST_ENDPOINT, token=PGREST_TOKEN)
@@ -56,8 +66,9 @@ def main(args):
         build_point_data(data)
 
         client_socrata = utils.socrata.get_client()
+        method = "replace" if args.replace else "upsert"
         utils.socrata.publish(
-            method="upsert",
+            method=method,
             resource_id=datasets[dataset],
             payload=data,
             client=client_socrata,
@@ -73,7 +84,9 @@ if __name__ == "__main__":
         "--date",
         type=str,
         help=f"An ISO 8601-compliant date string which will be used to query records",
-        required=True,
+    )
+    parser.add_argument(
+        "--replace", action="store_true", help="Replace all of the data"
     )
 
     cli_args = parser.parse_args()
