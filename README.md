@@ -21,3 +21,18 @@ This repo has a `template.env` file, copy that file and rename as `.env`. The mi
 Running `./main.py` will connect to the database, download and process the incidents and compare them to the active records in postgrest. Any records that differ will be upserted to postgrest.
 
 Note: You must be on the COA network in order to connect to the oracle database.
+
+### Local Dev
+
+If you are interested in setting up a local copy of the postgres database and postgREST service then you can use the `docker-compose-local.yaml` file. 
+
+```
+docker compose -f docker-compose-local.yaml up
+```
+
+This will then create a postgres DB locally alongside the postgREST service to access it. To use it with the scripts, simply make these edits to a production `.env` file:
+
+```
+PGREST_ENDPOINT=http://0.0.0.0:3000
+PGREST_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.z2R8GY8J23EBFWpyLQGqs8iJK1gsCm3Izg1Ez3qq5CQ
+```

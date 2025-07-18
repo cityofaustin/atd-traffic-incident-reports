@@ -3,11 +3,13 @@ import argparse
 import os
 import arrow
 import utils
+import sys
 from pypgrest import Postgrest
 
 PGREST_ENDPOINT = os.getenv("PGREST_ENDPOINT")
 PGREST_TOKEN = os.getenv("PGREST_TOKEN")
-SOCRATA_RESOURCE_ID = os.getenv("SOCRATA_RESOURCE_ID")
+TRAFFIC_RESOURCE_ID = os.getenv("TRAFFIC_RESOURCE_ID")
+FIRE_RESOURCE_ID = os.getenv("FIRE_RESOURCE_ID")
 
 
 def format_filter_date(date_from_args):
@@ -27,35 +29,51 @@ def build_point_data(data):
 
 
 def main(args):
+    if not args.date and not args.replace:
+        raise ValueError("You must either provide a date or use the --replace flag.")
+    if args.replace:
+        confirmation = input(
+            "Are you sure you want to replace all data stored in Socrata? Type 'yes' to confirm: "
+        )
+        if confirmation.strip().lower() != "yes":
+            sys.exit(1)
+
     filter_iso_date_str = format_filter_date(args.date)
 
     client_postgrest = Postgrest(PGREST_ENDPOINT, token=PGREST_TOKEN)
 
-    data = client_postgrest.select(
-        resource="traffic_reports",
-        params={
-            "traffic_report_status_date_time": f"gte.{filter_iso_date_str}",
-            "order": "traffic_report_status_date_time",
-        },
-    )
+    datasets = {
+        "traffic_incident": TRAFFIC_RESOURCE_ID,
+        "fire_incident": FIRE_RESOURCE_ID,
+    }
 
-    logger.info(f"{len(data)} records to process")
+    for dataset in datasets:
+        data = client_postgrest.select(
+            resource="incidents",
+            params={
+                "select": "traffic_report_id,published_date,issue_reported,latitude,longitude,address,traffic_report_status,traffic_report_status_date_time,agency",
+                "traffic_report_status_date_time": f"gte.{filter_iso_date_str}",
+                "order": "traffic_report_status_date_time",
+                "incident_type": f"eq.{dataset}",
+            },
+        )
 
-    if not data:
-        return
+        logger.info(f"{len(data)} {dataset}s to process")
 
-    build_point_data(data)
+        if not data:
+            return
 
-    client_socrata = utils.socrata.get_client()
-    method = "replace" if not args.date else "upsert"
+        build_point_data(data)
 
-    utils.socrata.publish(
-        method=method,
-        resource_id=SOCRATA_RESOURCE_ID,
-        payload=data,
-        client=client_socrata,
-    )
-    logger.info(f"{len(data)} records processed.")
+        client_socrata = utils.socrata.get_client()
+        method = "replace" if args.replace else "upsert"
+        utils.socrata.publish(
+            method=method,
+            resource_id=datasets[dataset],
+            payload=data,
+            client=client_socrata,
+        )
+        logger.info(f"{len(data)} records processed.")
 
 
 if __name__ == "__main__":
@@ -66,6 +84,9 @@ if __name__ == "__main__":
         "--date",
         type=str,
         help=f"An ISO 8601-compliant date string which will be used to query records",
+    )
+    parser.add_argument(
+        "--replace", action="store_true", help="Replace all of the data"
     )
 
     cli_args = parser.parse_args()
