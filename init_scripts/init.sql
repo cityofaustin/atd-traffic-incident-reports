@@ -19,7 +19,7 @@ SET row_security = off;
 CREATE SCHEMA api;
 
 
-create table api.public_safety_incidents
+create table api.incidents
 (
     traffic_report_id               text not null primary key,
     published_date                  timestamp with time zone,
@@ -33,7 +33,7 @@ create table api.public_safety_incidents
     incident_type                   text
 );
 
-alter table api.public_safety_incidents
+alter table api.incidents
     owner to postgres;
 
 --

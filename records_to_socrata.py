@@ -49,7 +49,7 @@ def main(args):
 
     for dataset in datasets:
         data = client_postgrest.select(
-            resource="public_safety_incidents",
+            resource="incidents",
             params={
                 "select": "traffic_report_id,published_date,issue_reported,latitude,longitude,address,traffic_report_status,traffic_report_status_date_time,agency",
                 "traffic_report_status_date_time": f"gte.{filter_iso_date_str}",

@@ -100,7 +100,7 @@ def get_active_records():
     :return: list of active records (dict)
     """
     active_records_endpoint = (
-        f"{PGREST_ENDPOINT}/public_safety_incidents?traffic_report_status=eq.ACTIVE"
+        f"{PGREST_ENDPOINT}/incidents?traffic_report_status=eq.ACTIVE"
     )
     active_records_response = requests.get(active_records_endpoint, headers=headers)
     active_records_response.raise_for_status()
@@ -190,7 +190,7 @@ def main():
 
     if payload:
         res = requests.post(
-            f"{PGREST_ENDPOINT}/public_safety_incidents", headers=headers, json=payload
+            f"{PGREST_ENDPOINT}/incidents", headers=headers, json=payload
         )
         logging.info(f"request response status code: {res.status_code}")
         res.raise_for_status()
