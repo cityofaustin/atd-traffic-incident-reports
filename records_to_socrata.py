@@ -61,7 +61,7 @@ def main(args):
         logger.info(f"{len(data)} {dataset}s to process")
 
         if not data:
-            return
+            continue
 
         build_point_data(data)
 
