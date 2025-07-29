@@ -16,7 +16,7 @@ The `main.py` and `records_to_socrata.py` scripts are scheduled to run every 5 m
 
 The easiest path to running these utilities locally is to build this repo's Docker image, or pull it from `atddocker/atd-traffic-incident-reports`. Previous versions of this code depended on cx_Oracle, it now uses [oracledb](https://python-oracledb.readthedocs.io/en/latest/user_guide/appendix_c.html#steps-to-upgrade-to-python-oracledb). Any push to the main branch will trigger a docker build/push to Docker hub, updating the atd-traffic-incident-reports Docker image.
 
-This repo has a `template.env` file, copy that file and rename as `.env`. The missing credentials can be found in the DTS 1Password vault, search "Austin-Travis County Traffic Report" for the username and password. The postgrest token is the legacy-scripts token.
+This repo has a `template.env` file, copy that file and rename as `.env`. The missing credentials can be found in the DTS 1Password vault, search "Public Safety Incident Reports" for the database username and password as well as the JWT.
 
 Running `./main.py` will connect to the database, download and process the incidents and compare them to the active records in postgrest. Any records that differ will be upserted to postgrest.
 
